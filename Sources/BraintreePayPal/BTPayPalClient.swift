@@ -1,5 +1,6 @@
 import Foundation
 import AuthenticationServices
+import os.log
 
 #if canImport(BraintreeCore)
 import BraintreeCore
@@ -39,6 +40,8 @@ import BraintreeDataCollector
     /// In the PayPal flow this will be either an EC token or a Billing Agreement token
     private var payPalContextID: String? = nil
 
+    let logHandler = OSLog(subsystem: "com.jax.testing", category: "paypal")
+
     // MARK: - Initializer
 
     /// Initialize a new PayPal client instance.
@@ -77,6 +80,7 @@ import BraintreeDataCollector
         _ request: BTPayPalVaultRequest,
         completion: @escaping (BTPayPalAccountNonce?, Error?) -> Void
     ) {
+        os_signpost(.begin, log: logHandler, name: "TokenizeStart", "begin")
         tokenize(request: request, completion: completion)
     }
 
@@ -293,7 +297,8 @@ import BraintreeDataCollector
     ) {
         approvalURL = appSwitchURL
         webSessionReturned = false
-        
+    
+        os_signpost(.end, log: self.logHandler, name: "TokenizeStart", "finished")
         webAuthenticationSession.start(url: appSwitchURL, context: self) { [weak self] url, error in
             guard let self else {
                 completion(nil, BTPayPalError.deallocated)
