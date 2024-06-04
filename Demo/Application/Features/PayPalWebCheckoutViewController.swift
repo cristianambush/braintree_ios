@@ -5,6 +5,8 @@ import BraintreeCore
 
 class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
 
+    let baTokenLabel = UILabel()
+
     lazy var payPalClient = BTPayPalClient(
         apiClient: apiClient,
         universalLink: URL(string: "https://mobile-sdk-demo-site-838cead5d3ab.herokuapp.com/braintree-payments")!
@@ -20,8 +22,14 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
     override func createPaymentButton() -> UIView {
         let payPalAppSwitchButton = createButton(title: "PayPal App Switch", action: #selector(tappedPayPalAppSwitch))
 
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(labelTapped))
+        baTokenLabel.isUserInteractionEnabled = true
+        baTokenLabel.addGestureRecognizer(tapGesture)
+        baTokenLabel.textColor = .systemPink
+
         let stackView = UIStackView(arrangedSubviews: [
-            buttonsStackView(label: "PayPal App Switch Flow", views: [emailTextField, payPalAppSwitchButton])
+            buttonsStackView(label: "PayPal App Switch Flow", views: [emailTextField, payPalAppSwitchButton]),
+            baTokenLabel
         ])
         
         stackView.axis = .vertical
@@ -114,6 +122,13 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             enablePayPalAppSwitch: true
         )
 
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(receivedNotification),
+            name: Notification.Name("BAToken"),
+            object: nil
+        )
+
         payPalClient.tokenize(request) { nonce, error in
             sender.isEnabled = true
             
@@ -126,7 +141,20 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             self.completionBlock(nonce)
         }
     }
-    
+
+    @objc func labelTapped(sender: UITapGestureRecognizer) {
+        UIPasteboard.general.string = baTokenLabel.text
+    }
+
+    @objc func receivedNotification(_ notification: Notification) {
+        guard let baToken = notification.object else {
+            baTokenLabel.text = "No token returned"
+            return
+        }
+
+        baTokenLabel.text = "\(baToken)"
+    }
+
     // MARK: - Helpers
     
     private func buttonsStackView(label: String, views: [UIView]) -> UIStackView {
