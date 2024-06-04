@@ -18,14 +18,10 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
     }()
 
     override func createPaymentButton() -> UIView {
-        let payPalCheckoutButton = createButton(title: "PayPal Checkout", action: #selector(tappedPayPalCheckout))
-        let payPalVaultButton = createButton(title: "PayPal Vault", action: #selector(tappedPayPalVault))
-        let payPalPayLaterButton = createButton(title: "PayPal with Pay Later Offered", action: #selector(tappedPayPalPayLater))
         let payPalAppSwitchButton = createButton(title: "PayPal App Switch", action: #selector(tappedPayPalAppSwitch))
 
         let stackView = UIStackView(arrangedSubviews: [
-            buttonsStackView(label: "1-Time Checkout Flows", views: [payPalCheckoutButton, payPalPayLaterButton]),
-            buttonsStackView(label: "Vault Flows", views: [emailTextField, payPalVaultButton, payPalAppSwitchButton])
+            buttonsStackView(label: "PayPal App Switch Flow", views: [emailTextField, payPalAppSwitchButton])
         ])
         
         stackView.axis = .vertical
@@ -141,7 +137,7 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
         buttonsStackView.axis = .vertical
         buttonsStackView.distribution = .fillProportionally
         buttonsStackView.backgroundColor = .systemGray6
-        buttonsStackView.layoutMargins = UIEdgeInsets(top: 5, left: 5, bottom: 5, right: 5)
+        buttonsStackView.layoutMargins = UIEdgeInsets(top: 0, left: 5, bottom: 0, right: 5)
         buttonsStackView.isLayoutMarginsRelativeArrangement = true
         
         return buttonsStackView
