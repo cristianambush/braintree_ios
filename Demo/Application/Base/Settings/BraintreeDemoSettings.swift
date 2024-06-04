@@ -32,7 +32,7 @@ class BraintreeDemoSettings: NSObject {
 
     @objc
     static var currentEnvironment: BraintreeDemoEnvironment {
-        return BraintreeDemoEnvironment(rawValue: UserDefaults.standard.integer(forKey: EnvironmentDefaultsKey)) ?? BraintreeDemoEnvironment.sandbox
+        return  BraintreeDemoEnvironment.production // Hard-code production env for employee testing
     }
 
     @objc

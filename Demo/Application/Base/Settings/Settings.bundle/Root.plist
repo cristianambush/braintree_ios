@@ -55,21 +55,15 @@
 			<integer>0</integer>
 			<key>ShortTitles</key>
 			<array>
-				<string>Sandbox</string>
 				<string>Production</string>
-				<string>Custom (enter below)</string>
 			</array>
 			<key>Titles</key>
 			<array>
-				<string>Sandbox</string>
 				<string>Production</string>
-				<string>Custom (URL on previous screen)</string>
 			</array>
 			<key>Values</key>
 			<array>
-				<integer>0</integer>
 				<integer>1</integer>
-				<integer>2</integer>
 			</array>
 		</dict>
 		<dict>
