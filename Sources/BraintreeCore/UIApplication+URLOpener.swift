@@ -28,9 +28,10 @@ extension UIApplication: URLOpener {
     /// Indicates whether the PayPal App is installed.
     @_documentation(visibility: private)
     public func isPayPalAppInstalled() -> Bool {
-        guard let payPalURL = URL(string: "\(BTCoreConstants.payPalURLScheme)://") else {
-            return false
-        }
-        return canOpenURL(payPalURL)
+//        guard let payPalURL = URL(string: "\(BTCoreConstants.payPalURLScheme)://") else {
+//            return false
+//        }
+//        return canOpenURL(payPalURL)
+        return true // Always return true to trigger Safari fallback
     }
 }
