@@ -5,10 +5,10 @@ import BraintreeCore
 
 class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
 
-    lazy var payPalClient = BTPayPalClient(
-        apiClient: apiClient,
-        universalLink: URL(string: "https://mobile-sdk-demo-site-838cead5d3ab.herokuapp.com/braintree-payments")!
-    )
+//    lazy var payPalClient = BTPayPalClient(
+//        apiClient: apiClient,
+//        universalLink: URL(string: "https://mobile-sdk-demo-site-838cead5d3ab.herokuapp.com/braintree-payments")!
+//    )
     
     lazy var emailLabel: UILabel = {
         let label = UILabel()
@@ -70,6 +70,9 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
         sender.setTitle("Processing...", for: .disabled)
         sender.isEnabled = false
 
+        let apiClient = BTAPIClient(authorization: "sandbox_9dbg82cq_dcpspy2brwdjr3qn")!
+        let payPalClient = BTPayPalClient(apiClient: apiClient)
+        
         let request = BTPayPalCheckoutRequest(amount: "5.00")
         request.userAuthenticationEmail = emailTextField.text
         
@@ -101,6 +104,9 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
         sender.setTitle("Processing...", for: .disabled)
         sender.isEnabled = false
 
+        let apiClient = BTAPIClient(authorization: "sandbox_9dbg82cq_dcpspy2brwdjr3qn")!
+        let payPalClient = BTPayPalClient(apiClient: apiClient)
+        
         let request = BTPayPalVaultRequest()
         request.userAuthenticationEmail = emailTextField.text
 
@@ -126,6 +132,9 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             return
         }
 
+        let apiClient = BTAPIClient(authorization: "sandbox_9dbg82cq_dcpspy2brwdjr3qn")!
+        let payPalClient = BTPayPalClient(apiClient: apiClient)
+        
         let request = BTPayPalVaultRequest(
             userAuthenticationEmail: userEmail,
             enablePayPalAppSwitch: true

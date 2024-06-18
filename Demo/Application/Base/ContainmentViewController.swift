@@ -196,34 +196,34 @@ class ContainmentViewController: UIViewController {
             return PayPalWebCheckoutViewController(authorization: authorization)
         }
 
-        switch integrationName {
-        case "AmexViewController":
-            return AmexViewController(authorization: authorization)
-        case "ApplePayViewController":
-            return ApplePayViewController(authorization: authorization)
-        case "CardTokenizationViewController":
-            return CardTokenizationViewController(authorization: authorization)
-        case "DataCollectorViewController":
-            return DataCollectorViewController(authorization: authorization)
-        case "IdealViewController":
-            return IdealViewController(authorization: authorization)
-        case "PayPalNativeCheckoutViewController":
-            return PayPalNativeCheckoutViewController(authorization: authorization)
-        case "PayPalWebCheckoutViewController":
+//        switch integrationName {
+//        case "AmexViewController":
+//            return AmexViewController(authorization: authorization)
+//        case "ApplePayViewController":
+//            return ApplePayViewController(authorization: authorization)
+//        case "CardTokenizationViewController":
+//            return CardTokenizationViewController(authorization: authorization)
+//        case "DataCollectorViewController":
+//            return DataCollectorViewController(authorization: authorization)
+//        case "IdealViewController":
+//            return IdealViewController(authorization: authorization)
+//        case "PayPalNativeCheckoutViewController":
+//            return PayPalNativeCheckoutViewController(authorization: authorization)
+//        case "PayPalWebCheckoutViewController":
+//            return PayPalWebCheckoutViewController(authorization: authorization)
+//        case "SEPADirectDebitViewController":
+//            return SEPADirectDebitViewController(authorization: authorization)
+//        case "ShopperInsightsViewController":
+//            return ShopperInsightsViewController(authorization: authorization)
+//        case "ThreeDSecureViewController":
+//            return ThreeDSecureViewController(authorization: authorization)
+//        case "VenmoViewController":
+//            return VenmoViewController(authorization: authorization)
+//        case "PayPalMessagingViewController":
+//            return PayPalMessagingViewController(authorization: authorization)
+//        default:
             return PayPalWebCheckoutViewController(authorization: authorization)
-        case "SEPADirectDebitViewController":
-            return SEPADirectDebitViewController(authorization: authorization)
-        case "ShopperInsightsViewController":
-            return ShopperInsightsViewController(authorization: authorization)
-        case "ThreeDSecureViewController":
-            return ThreeDSecureViewController(authorization: authorization)
-        case "VenmoViewController":
-            return VenmoViewController(authorization: authorization)
-        case "PayPalMessagingViewController":
-            return PayPalMessagingViewController(authorization: authorization)
-        default:
-            return PayPalWebCheckoutViewController(authorization: authorization)
-        }
+//        }
     }
 
     private func appendViewController(_ viewController: UIViewController) {
