@@ -196,11 +196,11 @@ class ContainmentViewController: UIViewController {
             return PayPalWebCheckoutViewController(authorization: authorization)
         }
 
-//        switch integrationName {
+        switch integrationName {
 //        case "AmexViewController":
 //            return AmexViewController(authorization: authorization)
-//        case "ApplePayViewController":
-//            return ApplePayViewController(authorization: authorization)
+        case "ApplePayViewController":
+            return ApplePayViewController(authorization: authorization)
 //        case "CardTokenizationViewController":
 //            return CardTokenizationViewController(authorization: authorization)
 //        case "DataCollectorViewController":
@@ -221,9 +221,9 @@ class ContainmentViewController: UIViewController {
 //            return VenmoViewController(authorization: authorization)
 //        case "PayPalMessagingViewController":
 //            return PayPalMessagingViewController(authorization: authorization)
-//        default:
+        default:
             return PayPalWebCheckoutViewController(authorization: authorization)
-//        }
+        }
     }
 
     private func appendViewController(_ viewController: UIViewController) {

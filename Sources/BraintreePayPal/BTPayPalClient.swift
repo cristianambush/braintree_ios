@@ -306,7 +306,7 @@ import BraintreeDataCollector
         payPalAppInstalled = application.isPayPalAppInstalled()
         linkType = (request as? BTPayPalVaultRequest)?.enablePayPalAppSwitch == true && payPalAppInstalled ? "universal" : "deeplink"
 
-        apiClient.sendAnalyticsEvent(BTPayPalAnalytics.tokenizeStarted, isVaultRequest: isVaultRequest, linkType: linkType)
+//        apiClient.sendAnalyticsEvent(BTPayPalAnalytics.tokenizeStarted, isVaultRequest: isVaultRequest, linkType: linkType)
         apiClient.fetchOrReturnRemoteConfiguration { configuration, error in
             if let error {
                 self.notifyFailure(with: error, completion: completion)
