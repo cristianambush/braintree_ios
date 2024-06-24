@@ -32,6 +32,7 @@ class BTAnalyticsService: Equatable {
     // MARK: - Deinit
 
     deinit {
+        print("🕐 Deinit of timer")
         BTAnalyticsService.timer?.cancel()
         BTAnalyticsService.timer = nil
     }
@@ -119,6 +120,7 @@ class BTAnalyticsService: Equatable {
         }
         
         if BTAnalyticsService.timer == nil {
+            print("🕐 Instantiation of timer")
             BTAnalyticsService.timer = DispatchSource.makeTimerSource(queue: self.http?.dispatchQueue)
             BTAnalyticsService.timer?.schedule(
                 deadline: .now() + .seconds(self.timerInterval),
@@ -139,6 +141,7 @@ class BTAnalyticsService: Equatable {
     // MARK: - Helpers
 
     func sendQueuedAnalyticsEvents() async {
+        print("🕐 Sending events")
         if await !BTAnalyticsService.events.isEmpty {
             do {
                 let configuration = try await apiClient.fetchConfiguration()
