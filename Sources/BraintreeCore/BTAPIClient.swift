@@ -73,6 +73,16 @@ import Foundation
         fetchOrReturnRemoteConfiguration { configuration, error in
             // No-op
         }
+        
+        // Kickoff the background request to fetch the config
+        fetchOrReturnRemoteConfiguration { configuration, error in
+            // No-op
+        }
+        
+        // Kickoff the background request to fetch the config
+        fetchOrReturnRemoteConfiguration { configuration, error in
+            // No-op
+        }
     }
 
     // MARK: - Deinit
