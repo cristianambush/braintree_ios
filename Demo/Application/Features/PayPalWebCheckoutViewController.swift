@@ -47,35 +47,36 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
 
     override func createPaymentButton() -> UIView {
         let payPalCheckoutButton = createButton(title: "PayPal Checkout", action: #selector(tappedPayPalCheckout))
-        let payPalVaultButton = createButton(title: "PayPal Vault", action: #selector(tappedPayPalVault))
-        let payPalAppSwitchButton = createButton(title: "PayPal App Switch", action: #selector(tappedPayPalAppSwitch))
-        let oneTimeCheckoutStackView = buttonsStackView(label: "1-Time Checkout", views: [
-            UIStackView(arrangedSubviews: [payLaterToggleLabel, payLaterToggle]),
-            UIStackView(arrangedSubviews: [newPayPalCheckoutToggleLabel, newPayPalCheckoutToggle]),
-            payPalCheckoutButton
-        ])
-        let vaultStackView = buttonsStackView(label: "Vault",views: [payPalVaultButton, payPalAppSwitchButton])
-
-
-        let stackView = UIStackView(arrangedSubviews: [
-            UIStackView(arrangedSubviews: [emailLabel, emailTextField]),
-            oneTimeCheckoutStackView,
-            vaultStackView
-        ])
-
-        NSLayoutConstraint.activate([
-            oneTimeCheckoutStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            oneTimeCheckoutStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
-
-            vaultStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            vaultStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
-          ])
-
-        stackView.axis = .vertical
-        stackView.distribution = .fillProportionally
-        stackView.spacing = 25
-        stackView.translatesAutoresizingMaskIntoConstraints = false
-        return stackView
+        return payPalCheckoutButton
+//        let payPalVaultButton = createButton(title: "PayPal Vault", action: #selector(tappedPayPalVault))
+//        let payPalAppSwitchButton = createButton(title: "PayPal App Switch", action: #selector(tappedPayPalAppSwitch))
+//        let oneTimeCheckoutStackView = buttonsStackView(label: "1-Time Checkout", views: [
+//            UIStackView(arrangedSubviews: [payLaterToggleLabel, payLaterToggle]),
+//            UIStackView(arrangedSubviews: [newPayPalCheckoutToggleLabel, newPayPalCheckoutToggle]),
+//            payPalCheckoutButton
+//        ])
+//        let vaultStackView = buttonsStackView(label: "Vault",views: [payPalVaultButton, payPalAppSwitchButton])
+//
+//
+//        let stackView = UIStackView(arrangedSubviews: [
+//            UIStackView(arrangedSubviews: [emailLabel, emailTextField]),
+//            oneTimeCheckoutStackView,
+//            vaultStackView
+//        ])
+//
+//        NSLayoutConstraint.activate([
+//            oneTimeCheckoutStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+//            oneTimeCheckoutStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+//
+//            vaultStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+//            vaultStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor)
+//          ])
+//
+//        stackView.axis = .vertical
+//        stackView.distribution = .fillProportionally
+//        stackView.spacing = 25
+//        stackView.translatesAutoresizingMaskIntoConstraints = false
+//        return stackView
     }
     
     // MARK: - 1-Time Checkout Flows
