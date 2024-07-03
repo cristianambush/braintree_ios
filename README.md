@@ -82,6 +82,21 @@ This SDK abides by our Client SDK Deprecation Policy. For more information on th
 
 Versions 4.9.6 and below use outdated SSL certificates and are unsupported.
 
+## Upgrade Your SDK Version
+
+### Swift Package Manager
+
+To update the `Braintree` package within your Xcode Project, select _File > Swift Packages > Update to latest Package Versions_
+
+### CocoaPods 
+
+To learn more about how to update a specific pod or all the pods listed in your `Podfile`, see the following [guidelines](https://guides.cocoapods.org/using/pod-install-vs-update.html). 
+
+### Carthage
+
+To see more information on version requirements supported by Carthage, see the following [documentation](https://github.com/Carthage/Carthage/blob/master/Documentation/Artifacts.md#version-requirement).
+
+
 ## Demo
 
 1. Run `pod install`
