@@ -82,6 +82,8 @@ import Foundation
         if graphQLHTTP != nil && graphQLHTTP?.session != nil {
             graphQLHTTP?.session.finishTasksAndInvalidate()
         }
+        
+        print("BTAPIClient deinit 🗑️")
     }
 
     // MARK: - Public Methods

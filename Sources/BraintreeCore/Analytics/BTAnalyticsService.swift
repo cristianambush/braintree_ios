@@ -31,12 +31,14 @@ class BTAnalyticsService {
     // MARK: - Initializer
     
     init(authorization: ClientAuthorization, configuration: BTConfiguration, metadata: BTClientMetadata) {
+        print("🆕 BTAnalyticsService")
         self.authorization = authorization
         self.configuration = configuration
         self.http = BTHTTP(authorization: authorization, customBaseURL: Self.url)
         self.metadata = metadata
         
         Self.timer.eventHandler = { [weak self] in
+            print("⏲️ Timer handler fired")
             guard let self else { return }
             Task {
                 await self.sendQueuedAnalyticsEvents()
@@ -48,6 +50,7 @@ class BTAnalyticsService {
     // MARK: - Deinit
 
     deinit {
+        print("BTAnalyticsService deinit 🗑️")
         Self.timer.suspend()
     }
 
