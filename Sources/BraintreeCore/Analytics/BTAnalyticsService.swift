@@ -22,7 +22,7 @@ class BTAnalyticsService {
     /// Amount of time, in seconds, between batch API requests sent to FPTI
     private static let timeInterval = 15
     
-    private static let timer = RepeatingTimer(timeInterval: timeInterval)
+    private let timer = RepeatingTimer(timeInterval: timeInterval)
     
     private let authorization: ClientAuthorization
     private let configuration: BTConfiguration
@@ -31,27 +31,29 @@ class BTAnalyticsService {
     // MARK: - Initializer
     
     init(authorization: ClientAuthorization, configuration: BTConfiguration, metadata: BTClientMetadata) {
-        print("🆕 BTAnalyticsService")
         self.authorization = authorization
         self.configuration = configuration
         self.http = BTHTTP(authorization: authorization, customBaseURL: Self.url)
         self.metadata = metadata
         
-        Self.timer.eventHandler = { [weak self] in
-            print("⏲️ Timer handler fired")
+        timer.eventHandler = { [weak self] in
+            print("✅ ⏲️ Timer handler fired")
             guard let self else { return }
             Task {
                 await self.sendQueuedAnalyticsEvents()
             }
         }
-        Self.timer.resume()
+        timer.resume()
+        let address = Unmanaged.passUnretained(self).toOpaque()
+        print("✅ 🆕 BTAnalyticsService \(address)")
     }
 
     // MARK: - Deinit
 
     deinit {
-        print("BTAnalyticsService deinit 🗑️")
-        Self.timer.suspend()
+        let address = Unmanaged.passUnretained(self).toOpaque()
+        print("✅ 🧽 BTAnalyticsService deinit \(address)")
+        timer.suspend()
     }
 
     // MARK: - Internal Methods
@@ -137,11 +139,12 @@ class BTAnalyticsService {
     // MARK: - Helpers
 
     func sendQueuedAnalyticsEvents() async {
-        if await !BTAnalyticsService.events.isEmpty {
+//        if await !BTAnalyticsService.events.isEmpty {
+            print("✅ 🎤 Sending events")
             let postParameters = await createAnalyticsEvent(sessionID: metadata.sessionID, events: Self.events.allValues)
             http.post("v1/tracking/batch/events", parameters: postParameters) { _, _, _ in }
-            await Self.events.removeAll()
-        }
+//            await Self.events.removeAll()
+//        }
     }
 
     /// Constructs POST params to be sent to FPTI

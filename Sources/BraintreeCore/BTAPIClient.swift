@@ -58,6 +58,9 @@ import Foundation
         configurationLoader = ConfigurationLoader(http: btHttp)
 
         super.init()
+        let address = Unmanaged.passUnretained(self).toOpaque()
+        print("✅ 🔮 BTAPIClient init \(address)")
+        
         http?.networkTimingDelegate = self
 
         // Kickoff the background request to fetch the config
@@ -83,7 +86,8 @@ import Foundation
             graphQLHTTP?.session.finishTasksAndInvalidate()
         }
         
-        print("BTAPIClient deinit 🗑️")
+        let address = Unmanaged.passUnretained(self).toOpaque()
+        print("✅ 🧼 BTAPIClient deinit \(address)")
     }
 
     // MARK: - Public Methods
