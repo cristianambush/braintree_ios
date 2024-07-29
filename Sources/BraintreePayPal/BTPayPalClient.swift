@@ -197,6 +197,35 @@ import BraintreeDataCollector
         completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void
     ) {
         // TODO: call API to get FI URL and return a BTPayPalVaultEditResult or Error
+        apiClient.fetchOrReturnRemoteConfiguration { configuration, error in
+            if let error {
+                self.notifyEditFIFailure(with: error, completion: completion)
+                return
+            }
+
+            guard let configuration, let json = configuration.json else {
+                self.notifyEditFIFailure(with: BTPayPalError.fetchConfigurationFailed, completion: completion)
+                return
+            }
+
+            guard json["paypalEnabled"].isTrue else {
+                self.notifyEditFIFailure(with: BTPayPalError.disabled, completion: completion)
+                return
+            }
+            // call v1/paypal_hermes/generate_edit_fi_url
+            // Response - agreementSetup {tokenId, paypalAppApprovalUrl, approvalUrl}
+            self.apiClient.post(request.hermesPath, parameters: request.parameters()) { body, response, error in
+
+            }
+
+            // function to launch ASWebAuthenticationSession
+            // if success, parase ba_token from session
+            // call v1/paypal_hermes/lookup_fi_details
+            // with request load:
+            // billing_agreement_token
+            // Response: billing_agreement_object 
+
+        }
         completion(nil, nil)
     }
 
@@ -552,6 +581,12 @@ import BraintreeDataCollector
             payPalContextID: payPalContextID
         )
         completion(nil, BTPayPalError.canceled)
+    }
+
+    private func notifyEditFIFailure(with error: Error, completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void) {
+
+        // TODO: Analytics
+        completion(nil, error)
     }
 }
 
