@@ -1,5 +1,6 @@
 import UIKit
 import BraintreeCard
+import BraintreeCore
 import BraintreeThreeDSecure
 
 class ThreeDSecureViewController: PaymentButtonBaseViewController {
@@ -9,9 +10,12 @@ class ThreeDSecureViewController: PaymentButtonBaseViewController {
 
     var callbackCountLabel = UILabel()
     var callbackCount: Int = 0
-    
-    lazy var threeDSecureClient = BTThreeDSecureClient(apiClient: apiClient)
 
+    lazy var threeDSecureClient: BTThreeDSecureClient = {
+        let api = BTAPIClient(authorization: auth)!
+        return BTThreeDSecureClient(apiClient: api)
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "3D Secure - Payment Flow"
@@ -44,7 +48,8 @@ class ThreeDSecureViewController: PaymentButtonBaseViewController {
         updateCallbackCount()
 
         let card = CardHelpers.newCard(from: cardFormView)
-        let cardClient = BTCardClient(apiClient: apiClient)
+        let api = BTAPIClient(authorization: auth)!
+        let cardClient = BTCardClient(apiClient: api)
 
         cardClient.tokenize(card) { tokenizedCard, error in
             guard let tokenizedCard else {

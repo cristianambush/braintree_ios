@@ -5,8 +5,11 @@ import BraintreeSEPADirectDebit
 
 class SEPADirectDebitViewController: PaymentButtonBaseViewController {
 
-    lazy var sepaDirectDebitClient = BTSEPADirectDebitClient(apiClient: apiClient)
-
+    lazy var sepaDirectDebitClient: BTSEPADirectDebitClient = {
+        let api = BTAPIClient(authorization: auth)!
+        return BTSEPADirectDebitClient(apiClient: api)
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         title = "SEPA Direct Debit"

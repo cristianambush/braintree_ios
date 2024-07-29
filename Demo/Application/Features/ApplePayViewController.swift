@@ -1,11 +1,15 @@
 import Foundation
 import BraintreeApplePay
+import BraintreeCore
 import PassKit
 
 class ApplePayViewController: PaymentButtonBaseViewController {
 
-    lazy var applePayClient = BTApplePayClient(apiClient: apiClient)
-
+    lazy var applePayClient: BTApplePayClient = {
+        let api = BTAPIClient(authorization: auth)!
+        return BTApplePayClient(apiClient: api)
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
 

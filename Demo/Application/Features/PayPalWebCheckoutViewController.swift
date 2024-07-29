@@ -5,10 +5,10 @@ import BraintreeCore
 
 class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
 
-    lazy var payPalClient = BTPayPalClient(
-        apiClient: apiClient,
-        universalLink: URL(string: "https://mobile-sdk-demo-site-838cead5d3ab.herokuapp.com/braintree-payments")!
-    )
+//    lazy var payPalClient = BTPayPalClient(
+//        apiClient: apiClient,
+//        universalLink: URL(string: "https://mobile-sdk-demo-site-838cead5d3ab.herokuapp.com/braintree-payments")!
+//    )
     
     lazy var emailLabel: UILabel = {
         let label = UILabel()
@@ -130,7 +130,10 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
         let request = BTPayPalVaultRequest()
         request.userAuthenticationEmail = emailTextField.text
 
-        payPalClient.tokenize(request) { nonce, error in
+        let api = BTAPIClient(authorization: auth)!
+        let _paypalClient = BTPayPalClient(apiClient: api)
+        
+        _paypalClient.tokenize(request) { nonce, error in
             sender.isEnabled = true
 
             guard let nonce else {
@@ -157,7 +160,10 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             enablePayPalAppSwitch: true
         )
 
-        payPalClient.tokenize(request) { nonce, error in
+        let api = BTAPIClient(authorization: auth)!
+        let _paypalClient = BTPayPalClient(apiClient: api)
+        
+        _paypalClient.tokenize(request) { nonce, error in
             sender.isEnabled = true
             
             guard let nonce else {

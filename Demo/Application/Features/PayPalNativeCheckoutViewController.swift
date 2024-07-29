@@ -1,9 +1,14 @@
 import Foundation
 import UIKit
+import BraintreeCore
 import BraintreePayPalNativeCheckout
 
 class PayPalNativeCheckoutViewController: PaymentButtonBaseViewController {
-	lazy var payPalNativeCheckoutClient = BTPayPalNativeCheckoutClient(apiClient: apiClient)
+    
+    lazy var payPalNativeCheckoutClient: BTPayPalNativeCheckoutClient = {
+        let api = BTAPIClient(authorization: auth)!
+        return BTPayPalNativeCheckoutClient(apiClient: api)
+    }()
 
 	override func createPaymentButton() -> UIView {
 		let payPalCheckoutButton = createButton(title: "One Time Checkout", action: #selector(tappedPayPalCheckout))
