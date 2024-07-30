@@ -215,11 +215,31 @@ import BraintreeDataCollector
             // call v1/paypal_hermes/generate_edit_fi_url
             // Response - agreementSetup {tokenId, paypalAppApprovalUrl, approvalUrl}
             self.apiClient.post(request.hermesPath, parameters: request.parameters()) { body, response, error in
+                if let error = error {
+                    self.notifyEditFIFailure(with: error, completion: completion)
+                }
 
+                // should be same as setup_billling_agreement
+                // we are not handling universal link yet, so default to web redirect
+                // but Gateway spec response doesn't include ["paymentResource"]["redirectUrl"] as with setup_billing_agreement, just ["agreementSetup"] fields
+                guard let body, let approvalURL = BTPayPalApprovalURLParser(body: body, linkType: nil) else {
+                    self.notifyEditFIFailure(with: BTPayPalError.invalidURL("Missing approval URL in gateway response."), completion: completion)
+                    return
+                }
+                switch approvalURL.redirectType {
+                case .payPalApp(let url):
+                    // check baToken and launch PayPal App later
+                    // this case cannot happen with linkType set to nil
+                    self.notifyEditFIFailure(with: BTPayPalError.invalidURL("Missing approval URL in gateway response."), completion: completion)
+                    fallthrough
+                case .webBrowser(let url):
+                    // launch webSession
+                    self.handleEditFIRequest(with: url, completion: completion)
+                }
             }
 
             // function to launch ASWebAuthenticationSession
-            // if success, parase ba_token from session
+            // if success, parse ba_token from session
             // call v1/paypal_hermes/lookup_fi_details
             // with request load:
             // billing_agreement_token
@@ -330,7 +350,14 @@ import BraintreeDataCollector
             self.notifySuccess(with: tokenizedAccount, completion: completion)
         }
     }
-    
+
+    func handleEditFIRequest(with url: URL?,
+                          completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void) {
+        // return notify
+        // send .vault as payment type
+        completion(nil, nil)
+    }
+
     @objc func applicationDidBecomeActive(notification: Notification) {
         webSessionReturned = true
     }
