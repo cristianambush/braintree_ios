@@ -67,6 +67,8 @@ import BraintreeDataCollector
     /// Used for sending the type of flow, universal vs deeplink to FPTI
     private var linkType: String? = nil
 
+    private var methodStart: Int? = nil
+
     // MARK: - Initializer
 
     /// Initialize a new PayPal client instance.
@@ -311,6 +313,7 @@ import BraintreeDataCollector
         request: BTPayPalRequest,
         completion: @escaping (BTPayPalAccountNonce?, Error?) -> Void
     ) {
+        methodStart = Date().utcTimestampMilliseconds
         payPalAppInstalled = application.isPayPalAppInstalled()
         linkType = (request as? BTPayPalVaultRequest)?.enablePayPalAppSwitch == true && payPalAppInstalled ? "universal" : "deeplink"
 
@@ -460,6 +463,9 @@ import BraintreeDataCollector
             }
         } sessionDidAppear: { [self] didAppear in
             if didAppear {
+                let methodFinish = Date().utcTimestampMilliseconds
+                let executionTime = methodFinish - methodStart!
+                print("Execution time: \(executionTime)")
                 apiClient.sendAnalyticsEvent(
                     BTPayPalAnalytics.browserPresentationSucceeded,
                     isConfigFromCache: isConfigFromCache,
