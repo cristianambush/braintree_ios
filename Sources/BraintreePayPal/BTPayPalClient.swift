@@ -341,6 +341,7 @@ import BraintreeDataCollector
             }
 
             self.payPalRequest = request
+            let postStartTime = Date().utcTimestampMilliseconds
             self.apiClient.post(
                 request.hermesPath,
                 parameters: request.parameters(with: configuration, universalLink: self.universalLink)
@@ -377,6 +378,9 @@ import BraintreeDataCollector
 
                     self.launchPayPalApp(with: url, baToken: baToken, completion: completion)
                 case .webBrowser(let url):
+                    let methodFinish = Date().utcTimestampMilliseconds
+                    let executionTime = methodFinish - postStartTime
+                    print("Post Execution time: \(executionTime)")
                     self.handlePayPalRequest(with: url, paymentType: request.paymentType, completion: completion)
                 }
             }
