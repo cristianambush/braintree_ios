@@ -30,6 +30,8 @@ import BraintreeDataCollector
     /// Exposed for testing the intent associated with this request
     var payPalRequest: BTPayPalRequest? = nil
 
+    var editFIRequest: BTPayPalVaultEditRequest? = nil
+
     /// Exposed for testing, the ASWebAuthenticationSession instance used for the PayPal flow
     var webAuthenticationSession: BTWebAuthenticationSession
 
@@ -212,6 +214,8 @@ import BraintreeDataCollector
                 self.notifyEditFIFailure(with: BTPayPalError.disabled, completion: completion)
                 return
             }
+
+            self.editFIRequest = request
             // call v1/paypal_hermes/generate_edit_fi_url
             // Response - agreementSetup {tokenId, paypalAppApprovalUrl, approvalUrl}
             self.apiClient.post(request.hermesPath, parameters: request.parameters()) { body, response, error in
@@ -228,25 +232,16 @@ import BraintreeDataCollector
                 }
                 switch approvalURL.redirectType {
                 case .payPalApp(let url):
+                    print("PayPal App url: \(url.absoluteString)")
                     // check baToken and launch PayPal App later
                     // this case cannot happen with linkType set to nil
                     self.notifyEditFIFailure(with: BTPayPalError.invalidURL("Missing approval URL in gateway response."), completion: completion)
-                    fallthrough
                 case .webBrowser(let url):
                     // launch webSession
                     self.handleEditFIRequest(with: url, completion: completion)
                 }
             }
-
-            // function to launch ASWebAuthenticationSession
-            // if success, parse ba_token from session
-            // call v1/paypal_hermes/lookup_fi_details
-            // with request load:
-            // billing_agreement_token
-            // Response: billing_agreement_object 
-
         }
-        completion(nil, nil)
     }
 
     /// Allows a customer to edit their PayPal payment method.
@@ -351,10 +346,88 @@ import BraintreeDataCollector
         }
     }
 
-    func handleEditFIRequest(with url: URL?,
+    func handleEditFIReturn(
+        _ url: URL?,
+        paymentType: BTPayPalPaymentType,
+        completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void
+    ) {
+        // analytics handleReturnStarted?
+
+        guard let url, BTPayPalReturnURL.isValidURLAction(url: url, linkType: linkType) else {
+            notifyEditFIFailure(with: BTPayPalError.invalidURLAction, completion: completion)
+            return
+        }
+
+        guard let action = BTPayPalReturnURL.action(from: url), action != "cancel" else {
+            notifyEditFICancel(completion: completion)
+            return
+        }
+
+        // clientMetadataID?
+
+        //  parse ba_token from the url
+        var ba_token: String?
+        let queryItems = URLComponents(url: url, resolvingAgainstBaseURL: true)?
+            .queryItems?
+            .compactMap { $0 }
+
+        if let baToken = queryItems?.filter({ $0.name == "ba_token" }).first?.value, !baToken.isEmpty {
+            ba_token = baToken
+        }
+
+        var parameters: [String: Any] = [:]
+
+        if let ba_token {
+            parameters["billing_agreement_token"] = ba_token
+        } else {
+            notifyEditFIFailure(with: BTPayPalError.missingBAToken, completion: completion)
+            return
+        }
+
+        if let editFIRequest, let merchantAccountID = editFIRequest.merchantAccountID {
+            parameters["merchant_account_id"] = merchantAccountID
+        }
+
+        apiClient.post("/v1/paypal_hermes/lookup_fi_details", parameters: parameters) { body, response, error in
+            if let error {
+                self.notifyEditFIFailure(with: error, completion: completion)
+                return
+            }
+
+            // billing_agreement response body
+            /*
+             {
+  "billing_agreement": {
+    "payer_info": {
+      "payer_id": "payer-id",
+      "email": "willette_kuhic@abernathy.co",
+      "first_name": "Lyman",
+      "last_name": "Bechtelar",
+      "phone": "(740) 647-0307 x4498",
+      "shipping_address": null
+    },
+    "funding_source_description": "VISA 9023"
+  }
+}
+             */
+//            guard let billling_agreement = body?["billing_agreement"],
+//                  let editResponse = BTPayPalVaultEditResult() else {
+            // new error
+//                self.notifyEditFIFailure(with: BTPayPalError.failedToEditFI, completion: completion)
+//                return
+//            }
+
+         //   self.notifyEditFISuccess(with: editResult, completion: completion)
+        }
+    }
+    
+    func handleEditFIRequest(with url: URL,
                           completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void) {
-        // return notify
-        // send .vault as payment type
+        if let scheme = url.scheme, !scheme.lowercased().hasPrefix("http") {
+            notifyEditFIFailure(with: BTPayPalError.asWebAuthenticationSessionURLInvalid(scheme), completion: completion)
+            return
+        }
+        performEditSwitchRequest(editUrl: url, paymentType: .vault, completion: completion)
         completion(nil, nil)
     }
 
@@ -571,6 +644,56 @@ import BraintreeDataCollector
         }
     }
 
+    private func performEditSwitchRequest(
+        editUrl: URL,
+        paymentType: BTPayPalPaymentType,
+        completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void
+    ) {
+
+        webSessionReturned = false
+
+        webAuthenticationSession.start(url: editUrl, context: self) { [weak self] url, error in
+            guard let self else {
+                completion(nil, BTPayPalError.deallocated)
+                return
+            }
+
+            if let error {
+                notifyEditFIFailure(with: BTPayPalError.webSessionError(error), completion: completion)
+                return
+            }
+
+            guard let url, let returnURL = BTPayPalReturnURL(.webBrowser(url: url)) else {
+                notifyEditFIFailure(with: BTPayPalError.invalidURL("ASWebAuthenticationSession return URL cannot be nil"), completion: completion)
+                return
+            }
+
+            switch returnURL.state {
+            case .succeeded, .canceled:
+                handleEditFIReturn(url, paymentType: .vault, completion: completion)
+            case .unknownPath:
+                notifyEditFIFailure(with: BTPayPalError.asWebAuthenticationSessionURLInvalid(url.absoluteString), completion: completion)
+            }
+        } sessionDidAppear: {
+            didAppear in
+            if didAppear {
+                // analytics browserPresentationSucceeded
+            } else {
+                // analytics browserPresentationFailed
+            }
+        } sessionDidCancel: { [self] in
+            if !webSessionReturned {
+                // User tapped system cancel button on permission alert
+                // analytics browserLoginAlertCanceled
+            }
+
+            // User canceled by breaking out of the PayPal browser switch flow
+            // (e.g. System "Cancel" button on permission alert or browser during ASWebAuthenticationSession)
+            notifyEditFICancel(completion: completion)
+            return
+        }
+    }
+
     // MARK: - Analytics Helper Methods
 
     private func notifySuccess(
@@ -607,6 +730,19 @@ import BraintreeDataCollector
             linkType: linkType,
             payPalContextID: payPalContextID
         )
+        completion(nil, BTPayPalError.canceled)
+    }
+
+    private func notifyEditFISuccess(
+        with result: BTPayPalVaultEditResult,
+        completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void
+    ) {
+        // analytics editFISucceeded
+        completion(result, nil)
+    }
+
+    private func notifyEditFICancel(completion: @escaping (BTPayPalVaultEditResult?, Error?) -> Void) {
+        // analytics browserLoginCanceled
         completion(nil, BTPayPalError.canceled)
     }
 
