@@ -1,26 +1,28 @@
 import Foundation
 
 class ConfigurationLoader {
-    
+
     // MARK: - Private Properties
-    
+
     private let configPath = "v1/configuration"
     private let configurationCache = ConfigurationCache.shared
     private let http: BTHTTP
     private let pendingCompletions = ConfigurationCallbackStorage()
-    
+    private var existingTask: Task<BTConfiguration, Error>?
+
     // MARK: - Intitializer
-    
+
     init(http: BTHTTP) {
         self.http = http
     }
-    
+
     deinit {
         http.session.finishTasksAndInvalidate()
+        existingTask?.cancel()
     }
-    
+
     // MARK: - Internal Methods
-        
+
     /// Fetches or returns the configuration and caches the response in the GET BTHTTP call if successful.
     ///
     /// This method attempts to retrieve the configuration in the following order:
@@ -35,56 +37,51 @@ class ConfigurationLoader {
     ///   - `BTConfiguration?`: The configuration object if it is successfully fetched or retrieved from the cache.
     ///   - `Error?`: An error object if fetching the configuration fails or if the instance is deallocated.
     @_documentation(visibility: private)
-    func getConfig(completion: @escaping (BTConfiguration?, Error?) -> Void) {
-        if let cachedConfig = try? configurationCache.getFromCache(authorization: http.authorization.bearer) {
-            completion(cachedConfig, nil)
-            return
-        }
-        
-        pendingCompletions.add(completion)
-        
-        // If this is the 1st `v1/config` GET attempt, proceed with firing the network request.
-        // Otherwise, there is already a pending network request.
-        if pendingCompletions.count == 1 {
-            http.get(configPath, parameters: BTConfigurationRequest()) { [weak self] body, response, error in
-                guard let self else {
-                    self?.notifyCompletions(nil, BTAPIClientError.deallocated)
-                    return
-                }
-                
-                if let error {
-                    notifyCompletions(nil, error)
-                    return
-                } else if response?.statusCode != 200 || body == nil {
-                    notifyCompletions(nil, BTAPIClientError.configurationUnavailable)
-                    return
-                } else {
-                    let configuration = BTConfiguration(json: body)
-                    
-                    try? configurationCache.putInCache(authorization: http.authorization.bearer, configuration: configuration)
-                    
-                    notifyCompletions(configuration, nil)
-                    return
-                }
-            }
-        }
-    }
-    
     func getConfig() async throws -> BTConfiguration {
-        try await withCheckedThrowingContinuation { continuation in
-            getConfig { configuration, error in
-                if let error {
-                    continuation.resume(throwing: error)
-                } else if let configuration {
-                    continuation.resume(returning: configuration)
+        if let cachedConfig = try? configurationCache.getFromCache(authorization: http.authorization.bearer) {
+            return cachedConfig
+        }
+
+        if let existingTask = existingTask {
+            return try await existingTask.value
+        }
+
+        let task = Task { () throws -> BTConfiguration in
+            return try await withCheckedThrowingContinuation { continuation in
+                http.get(configPath, parameters: BTConfigurationRequest()) { [weak self] body, response, error in
+                    guard let self else {
+                        continuation.resume(throwing: BTAPIClientError.deallocated)
+                        return
+                    }
+
+                    if let error {
+                        continuation.resume(throwing: error)
+                    } else if response?.statusCode != 200 || body == nil {
+                        continuation.resume(throwing: BTAPIClientError.configurationUnavailable)
+                    } else {
+                        let configuration = BTConfiguration(json: body)
+                        try? self.configurationCache.putInCache(authorization: self.http.authorization.bearer, configuration: configuration)
+                        continuation.resume(returning: configuration)
+                    }
+
+                    self.existingTask = nil
                 }
             }
         }
+
+        existingTask = task
+
+        return try await task.value
     }
-    
-    // MARK: - Private Methods
-    
-    func notifyCompletions(_ configuration: BTConfiguration?, _ error: Error?) {
-        pendingCompletions.invoke(configuration, error)
+
+    func getConfig(completion: @escaping (BTConfiguration?, Error?) -> Void) {
+        Task {
+            do {
+                let config = try await getConfig()
+                completion(config, nil)
+            } catch {
+                completion(nil, error)
+            }
+        }
     }
 }
