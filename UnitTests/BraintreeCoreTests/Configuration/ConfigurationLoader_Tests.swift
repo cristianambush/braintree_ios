@@ -131,4 +131,25 @@ class ConfigurationLoader_Tests: XCTestCase {
             XCTAssertEqual(error as NSError, mockError)
         }
     }
+
+    func testGetConfig_whenCalledInQuickSequence_onlySendsOneNetworkRequest() {
+        let expectation = XCTestExpectation(description: "All getConfig calls complete")
+        expectation.expectedFulfillmentCount = 4
+        
+        ConfigurationCache.shared.cacheInstance.removeAllObjects()
+        
+        mockHTTP.cannedConfiguration = BTJSON(value: ["test": true])
+        mockHTTP.cannedStatusCode = 200
+        
+        sut.getConfig { _, _ in expectation.fulfill() }
+        sut.getConfig { _, _ in expectation.fulfill() }
+        sut.getConfig { _, _ in expectation.fulfill() }
+        sut.getConfig { _, _ in expectation.fulfill() }
+        
+        wait(for: [expectation], timeout: 2.0)
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            XCTAssertEqual(self.mockHTTP.GETRequestCount, 1)
+        }
+    }
 }
