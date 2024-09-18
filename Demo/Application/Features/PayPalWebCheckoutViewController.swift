@@ -40,6 +40,15 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
     }()
     
     let newPayPalCheckoutToggle = UISwitch()
+    
+    lazy var rbaDataToggleLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Recurring Billing (RBA) Data"
+        label.font = .preferredFont(forTextStyle: .footnote)
+        return label
+    }()
+    
+    let rbaDataToggle = UISwitch()
 
     lazy var payPalVaultIDLabel: UILabel = {
         let label = UILabel()
@@ -165,8 +174,41 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
         sender.setTitle("Processing...", for: .disabled)
         sender.isEnabled = false
 
-        let request = BTPayPalVaultRequest()
+        var request = BTPayPalVaultRequest()
         request.userAuthenticationEmail = emailTextField.text
+        
+        if rbaDataToggle.isOn {
+            let billingPricing = BTPayPalBillingPricing(
+                pricingModel: .fixed,
+                amount: "9.99",
+                reloadThresholdAmount: "99.99"
+            )
+            
+            let billingCycle = BTPayPalBillingCycle(
+                interval: .month,
+                intervalCount: 1,
+                numberOfExecutions: 1,
+                isTrial: true,
+                sequence: 1,
+                startDate: "2024-08-01",
+                pricing: billingPricing
+            )
+            
+            let recurringBillingDetails = BTPayPalRecurringBillingDetails(
+                billingCycles: [billingCycle],
+                currencyISOCode: "USD",
+                totalAmount: "32.56",
+                productName: "Vogue Magazine Subscription",
+                productDescription: "Home delivery to Chicago, IL",
+                productQuantity: 1,
+                oneTimeFeeAmount: "9.99",
+                shippingAmount: "1.99",
+                productAmount: "19.99",
+                taxAmount: "0.59"
+            )
+            
+            request = BTPayPalVaultRequest(recurringBillingDetails: recurringBillingDetails, recurringBillingPlanType: .subscription)
+        }
 
         payPalClient.tokenize(request) { nonce, error in
             sender.isEnabled = true
