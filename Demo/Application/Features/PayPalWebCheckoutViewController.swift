@@ -7,6 +7,7 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
 
     lazy var payPalClient = BTPayPalClient(
         apiClient: apiClient,
+        // swiftlint:disable:next force_unwrapping
         universalLink: URL(string: "https://mobile-sdk-demo-site-838cead5d3ab.herokuapp.com/braintree-payments")!
     )
     
@@ -109,8 +110,13 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             UIStackView(arrangedSubviews: [newPayPalCheckoutToggleLabel, newPayPalCheckoutToggle]),
             payPalCheckoutButton
         ])
-        let vaultStackView = buttonsStackView(label: "Vault",views: [payPalVaultButton, payPalAppSwitchButton])
         let editFIStackView = buttonsStackView(label: "Edit FI Flow", views: [payPalVaultIDLabel, payPalVaultIDTextField, UIStackView(arrangedSubviews: [errorHandlingToggleLabel, errorHandlingToggle]), riskCorrelationIDLabel, riskCorrelationIDTextField, payPalEditVaultButton])
+        let vaultStackView = buttonsStackView(label: "Vault", views: [
+            UIStackView(arrangedSubviews: [rbaDataToggleLabel, rbaDataToggle]),
+            payPalVaultButton,
+            payPalAppSwitchButton
+        ])
+
         let stackView = UIStackView(arrangedSubviews: [
             UIStackView(arrangedSubviews: [emailLabel, emailTextField]),
             oneTimeCheckoutStackView,
@@ -118,9 +124,10 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             editFIStackView
         ])
 
-        NSLayoutConstraint.activate([
-            oneTimeCheckoutStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
-            oneTimeCheckoutStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
+        NSLayoutConstraint.activate(
+            [
+                oneTimeCheckoutStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
+                oneTimeCheckoutStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
 
             vaultStackView.leadingAnchor.constraint(equalTo: stackView.leadingAnchor),
             vaultStackView.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
@@ -151,7 +158,7 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
         lineItem.upcType = .UPC_A
         lineItem.imageURL = URL(string: "https://www.example.com/example.jpg")
 
-        request.lineItems = [lineItem]        
+        request.lineItems = [lineItem]
         request.offerPayLater = payLaterToggle.isOn
         request.intent = newPayPalCheckoutToggle.isOn ? .sale : .authorize
 
@@ -185,10 +192,10 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             )
             
             let billingCycle = BTPayPalBillingCycle(
+                isTrial: true,
+                numberOfExecutions: 1,
                 interval: .month,
                 intervalCount: 1,
-                numberOfExecutions: 1,
-                isTrial: true,
                 sequence: 1,
                 startDate: "2024-08-01",
                 pricing: billingPricing
@@ -243,7 +250,6 @@ class PayPalWebCheckoutViewController: PaymentButtonBaseViewController {
             guard let nonce else {
                 self.progressBlock(error?.localizedDescription)
                 return
-
             }
             
             self.completionBlock(nonce)
